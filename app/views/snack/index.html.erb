@@ -1,0 +1,30 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+  <title>Appfolio Snackbot</title>
+  <meta name="description" content="Appfolio Snackbot">
+  <!-- point to css and javascript pages-->
+  <script src=></script>
+  <link rel="stylesheet" href="../../assets/stylesheets/snacks.css">
+</head>
+<body>
+	<!-- This is the Title -->
+	<Center><h1>The Sn <img src="../../assets/images/logo.png" alt="logo" align="middle" style="width:50px;height:50px;"> ck List</h1>
+	<p>This is the list of Snacks that have have been requested the most</p>
+	<!-- This is where we put the list of snacks that are requested in order from least to greatest -->
+	<table>                         
+  <tr>                          
+    <th>Snack</th>
+    <th>Store</th>
+  </tr>
+  <% @Snack.each do |Snack| %>
+  <tr>
+    <td><%= Snack.name %></td>
+    <td><%= data.store %></td>
+  </tr>
+  <% end %>
+  </table>
+	</Center>
+</body>
+</html>
