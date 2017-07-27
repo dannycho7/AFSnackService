@@ -1,3 +1,30 @@
-table, th, td {
-    border: 1px solid black;
+.thead{
+    font-size: 40px;
+}
+.data{
+    font-size: 30px;
+}
+.form-bg{
+    background: #00b4ef;
+}
+.form-horizontal{
+    background: #fff;
+    padding-bottom: 40px;
+    border-radius: 15px;
+    text-align: center;
+}
+.form-horizontal .heading{
+    display: block;
+    font-size: 50px;
+    font-weight: 700;
+    padding: 35px 0;
+    border-bottom: 1px solid #f0f0f0;
+    margin-bottom: 30px;
+}
+.form-horizontal .text{
+    float: left;
+    margin-left: 7px;
+    line-height: 20px;
+    padding-top: 5px;
+    text-transform: capitalize;
 }
