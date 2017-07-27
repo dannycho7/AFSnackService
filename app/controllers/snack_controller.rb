@@ -5,8 +5,22 @@ class SnackController < ApplicationController
   end
 
   def create
+    @snack = Snack.new(snack_params)
+
+    @snack.save
+
     respond_to do |format|
-      format.json { render json: { success: true } }
+      if @snack.valid?
+        format.json { render json: @snack.to_json }
+      else
+        format.json { render json: { error_message: 'failed to save' }}
+      end
     end
+  end
+
+  private
+
+  def snack_params
+    params.permit(:name, :store)
   end
 end
