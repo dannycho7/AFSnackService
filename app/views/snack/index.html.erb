@@ -10,7 +10,7 @@
 </head>
 <body>
 	<!-- This is the Title -->
-	<Center><h1>The Sn <img src="../../assets/images/logo.png" alt="logo" align="middle" style="width:50px;height:50px;"> ck List</h1>
+	<Center><h1>The Sn <img src="../../assets/images/logo.png" alt="logo" align="middle" style="width:40px;height:40px;"> ck List</h1>
 	<p>This is the list of Snacks that have have been requested the most</p>
 	<!-- This is where we put the list of snacks that are requested in order from least to greatest -->
 	<table>                         
@@ -20,8 +20,8 @@
   </tr>
   <% @Snack.each do |Snack| %>
   <tr>
-    <td><%= Snack.name %></td>
-    <td><%= data.store %></td>
+    <td><%= snack.name %></td>
+    <td><%= snack.store %></td>
   </tr>
   <% end %>
   </table>
