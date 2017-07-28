@@ -3,9 +3,11 @@ require 'httparty'
 
 
 class SlackController < ApplicationController
-  skip_before_action :verify_authenticity_token
-
   include SnackHelper
+  include SlackHelper
+
+  skip_before_action :verify_authenticity_token
+  before_action :verify_slack_token
 
   BANNER_TEXT = '*Vote on your favorite snacks (Resets Bi-Weekly)*'.freeze
   EMPTY_SNACK_LIST_TEXT = 'There are no snacks in the snack list. Type /suggest [snackname] to add a new snack!'.freeze
