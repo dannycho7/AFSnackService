@@ -101,7 +101,7 @@ class SlackController < ApplicationController
           },
           {
             name: name,
-            text: 'Undo my vote',
+            text: 'Indifferent',
             type: 'button',
             value: 0
           }
