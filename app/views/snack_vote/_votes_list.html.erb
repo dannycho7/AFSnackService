@@ -1,0 +1,36 @@
+<h1 class="header" >
+  Snack votes currently cast:
+</h1>
+
+<div>
+  <table class="striped">
+    <thead>
+      <tr>
+        <td>
+          Name of Snack
+        </td>
+        <td>
+          Yes Votes
+        </td>
+        <td>
+          No Votes
+        </td>
+      </tr>
+    </thead>
+    <tbody>
+    <% @sorted_snacks.each do |snack| %>
+      <tr>
+        <td>
+          <%= snack[:name] %>
+        </td>
+        <td>
+          <%= snack[:vote_count_yes]%>
+        </td>
+        <td>
+          <%= snack[:vote_count_no] %>
+        </td>
+      </tr>
+    <% end %>
+    </tbody>
+  </table>
+</div>
