@@ -2,26 +2,29 @@
 <html>
 <head>
   <meta content='text/html; charset=UTF-8' http-equiv='Content-Type' />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.0/css/materialize.min.css">
 </head>
 <body>
-<h1>Hi,</h1>
-<p>
-  The following are the snack votes for the past two weeks:<br>
-</p>
-<table style="width:100%">
-  <tr>
-    <th>Snack</th>
-    <th>Yes Votes</th>
-    <th>No Votes</th>
-  </tr>
-  <% @snack_votes.each do |snack_vote| %>
+<div class="container">
+  <h1>Hi,</h1>
+  <p>
+    The following are the snack votes for the past two weeks:<br>
+  </p>
+  <table class="striped">
     <tr>
-      <td><%= snack_vote[:name] %></td>
-      <td><%= snack_vote[:vote_count_yes] %></td>
-      <td><%= snack_vote[:vote_count_no] %></td>
+      <th>Snack</th>
+      <th>Yes Votes</th>
+      <th>No Votes</th>
     </tr>
-  <% end %>
-</table>
-<p>Thanks you and have a great day!</p>
+    <% @snack_votes.each do |snack_vote| %>
+        <tr>
+          <td><%= snack_vote[:name] %></td>
+          <td><%= snack_vote[:vote_count_yes] %></td>
+          <td><%= snack_vote[:vote_count_no] %></td>
+        </tr>
+    <% end %>
+  </table>
+  <p>Thanks you and have a great day!</p>
+</div>
 </body>
 </html>
