@@ -22,15 +22,44 @@ module SlackHelper
     }.to_json, headers: {'Content-Type': 'application/json'})
   end
 
+  def create_atachment_entry(display_name:, vote_count_yes:, vote_count_no:, name:)
+    {
+      text: display_name,
+      fallback: ATTACHMENT_FALLBACK,
+      callback_id: ATTACHMENT_VOTE_CALLBACK_ID,
+      color: ATTACHMENT_COLOR,
+      attachment_type: ATTACHMENT_TYPE,
+      vote_count_yes: vote_count_yes,
+      actions: [
+        {
+          name: name,
+          text: vote_count_yes.to_s,
+          type: 'button',
+          style: 'primary',
+          value: 1
+        },
+        {
+          name: name,
+          text: vote_count_no.to_s,
+          type: 'button',
+          style: 'danger',
+          value: -1
+        },
+        {
+          name: name,
+          text: 'Indifferent',
+          type: 'button',
+          value: 0
+        }
+      ]
+    }
+  end
+
   private
 
-  def get_attachment_info
+  def get_attachment_info(default_attachment = { text: EMPTY_SNACK_LIST_TEXT })
     snack_attachments = snack_list
-    snack_attachments.push(
-      {
-        text: EMPTY_SNACK_LIST_TEXT,
-      }
-    ) if snack_attachments.empty?
+    snack_attachments.push(default_attachment) if snack_attachments.empty?
     snack_attachments
   end
 
@@ -40,38 +69,8 @@ module SlackHelper
       vote_count_yes = snack[:vote_count_yes]
       vote_count_no = snack[:vote_count_no]
       display_name = name.capitalize
-      {
-        text: display_name,
-        fallback: ATTACHMENT_FALLBACK,
-        callback_id: ATTACHMENT_VOTE_CALLBACK_ID,
-        color: ATTACHMENT_COLOR,
-        attachment_type: ATTACHMENT_TYPE,
-        vote_count_yes: vote_count_yes,
-        actions: [
-          {
-            name: name,
-            text: vote_count_yes.to_s,
-            type: 'button',
-            style: 'primary',
-            value: 1
-          },
-          {
-            name: name,
-            text: vote_count_no.to_s,
-            type: 'button',
-            style: 'danger',
-            value: -1
-          },
-          {
-            name: name,
-            text: 'Indifferent',
-            type: 'button',
-            value: 0
-          }
-        ]
-      }
+      create_atachment_entry(display_name: display_name, vote_count_yes: vote_count_yes, vote_count_no: vote_count_no, name: name)
     end
-    .select { |entry| entry[:vote_count_yes] > 0 }
   end
 
   def check_payload

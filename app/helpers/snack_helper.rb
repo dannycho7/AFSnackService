@@ -4,10 +4,11 @@ module SnackHelper
       {
         name: snack.name,
         vote_count_yes: snack.votes.count { |vote| vote.value == 1 },
-        vote_count_no: snack.votes.count { |vote| vote.value == -1 }
+        vote_count_no: snack.votes.count { |vote| vote.value == -1 },
+        id: snack.id
       }
     end
-    snacks.sort_by { |snack| snack[:vote_count_yes] }.reverse
+    snacks.select { |entry| entry[:vote_count_yes] > -1 }.sort_by { |snack| snack[:vote_count_yes] }.reverse.take(30)
   end
 
   def add_vote_using_payload
