@@ -9,7 +9,7 @@ class SlackController < ApplicationController
   skip_before_action :verify_authenticity_token
   before_action :verify_slack_token
 
-  BANNER_TEXT = '*Vote on your favorite snacks (Resets Bi-Weekly)*'.freeze
+  BANNER_TEXT = "*Vote on your favorite snacks (Resets Bi-Weekly)*\n You can also view the results <http://snack-request-service.herokuapp.com|here>".freeze
   INFO_TEXT = "*Snack Service Command List:*\n[To view the current snack list] /snacklist. \n[To suggest/add a new snack] /suggest [snackname]".freeze
 
   def vote
