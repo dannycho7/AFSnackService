@@ -1,10 +1,11 @@
 require 'json'
+require 'httparty'
+
 
 class SlackController < ApplicationController
   skip_before_action :verify_authenticity_token
 
   BANNER_TEXT = 'Vote on your favorite snacks'.freeze
-  ATTACHMENT_TEXT = 'Temporary text'
   ATTACHMENT_TYPE = 'default'.freeze
   ATTACHMENT_COLOR = '#3AA3E3'.freeze
   ATTACHMENT_VOTE_CALLBACK_ID = 'vote'.freeze
@@ -16,7 +17,7 @@ class SlackController < ApplicationController
     render json: {
       text: BANNER_TEXT,
       message_ts: params[:message_ts],
-      "attachments": get_attachment_info
+      attachments: get_attachment_info
     }
   end
 
@@ -37,11 +38,17 @@ class SlackController < ApplicationController
           if add_vote_using_command
             format.json {
               render json: {
-                response_type: 'in_channel',
-                text: BANNER_TEXT,
-                "attachments": get_attachment_info
+                text: 'Successfully added snack',
               }
             }
+=begin
+            url = URI.parse('https://hooks.slack.com/actions/T02AA5M0U/218938289316/IfJkisS0GaaQMU3cTAKLU6wL')
+            res = HTTParty.post(url.to_s, body: {
+              text: BANNER_TEXT,
+              attachments: get_attachment_info
+            })
+            puts res
+=end
           else
             format.json {
               render json: {
@@ -56,7 +63,22 @@ class SlackController < ApplicationController
   private
 
   def get_attachment_info
-    snack_list
+    snack_list.push(
+      {
+        text: 'Add your own snack item',
+        fallback: ATTACHMENT_FALLBACK,
+        callback_id: ATTACHMENT_VOTE_CALLBACK_ID,
+        color: ATTACHMENT_COLOR,
+        attachment_type: ATTACHMENT_TYPE,
+        actions: [
+          {
+            name: 'test',
+            text: 'Add your own snack item',
+            type: 'input'
+          }
+        ]
+      }
+    )
   end
 
   def snack_list
@@ -64,7 +86,7 @@ class SlackController < ApplicationController
     snacks.map do |snack|
       votes = snack.votes
       vote_count_yes = votes.count { |vote| vote.value == 1 }
-      vote_count_no = votes.count{ |vote| vote.value == -1 }
+      vote_count_no = votes.count { |vote| vote.value == -1 }
 
       display_name = snack.name.capitalize + ' - ' + vote_count_yes.to_s + ' yes ' + vote_count_no.to_s + ' no'
       {
@@ -98,7 +120,7 @@ class SlackController < ApplicationController
         ]
       }
     end
-    .select { |entry| entry[:vote_count_yes] > -2 }
+      .select { |entry| entry[:vote_count_yes] > -2 }
   end
 
   def add_vote_using_payload
