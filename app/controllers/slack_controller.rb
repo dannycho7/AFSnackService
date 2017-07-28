@@ -5,6 +5,8 @@ require 'httparty'
 class SlackController < ApplicationController
   skip_before_action :verify_authenticity_token
 
+  include SnackHelper
+
   BANNER_TEXT = 'Vote on your favorite snacks'.freeze
   ATTACHMENT_TYPE = 'default'.freeze
   ATTACHMENT_COLOR = '#3AA3E3'.freeze
@@ -35,26 +37,21 @@ class SlackController < ApplicationController
         end
       when 'suggest'
         respond_to do |format|
-          if add_vote_using_command
-            format.json {
-              render json: {
-                text: 'Successfully added snack',
+          add_vote_using_command do |status|
+            if status[:success]
+              format.json {
+                render json: {
+                  text: "Successfully added snack *#{status[:snackname]}*"
+                }
+                send_updated_list
               }
-            }
-=begin
-            url = URI.parse('https://hooks.slack.com/actions/T02AA5M0U/218938289316/IfJkisS0GaaQMU3cTAKLU6wL')
-            res = HTTParty.post(url.to_s, body: {
-              text: BANNER_TEXT,
-              attachments: get_attachment_info
-            })
-            puts res
-=end
-          else
-            format.json {
-              render json: {
-                text: 'This snack cannot be added'
+            else
+              format.json {
+                render json: {
+                  text: "This snack cannot be added *#{status[:snackname]}*"
+                }
               }
-            }
+            end
           end
         end
     end
@@ -62,33 +59,24 @@ class SlackController < ApplicationController
 
   private
 
+  def send_updated_list
+    url = URI.parse(ENV['SLACK_WEBHOOK_URL'])
+    res = HTTParty.post(url.to_s, body: {
+      text: BANNER_TEXT,
+      attachments: get_attachment_info
+    }.to_json, headers: { 'Content-Type': 'application/json' })
+  end
+
   def get_attachment_info
-    snack_list.push(
-      {
-        text: 'Add your own snack item',
-        fallback: ATTACHMENT_FALLBACK,
-        callback_id: ATTACHMENT_VOTE_CALLBACK_ID,
-        color: ATTACHMENT_COLOR,
-        attachment_type: ATTACHMENT_TYPE,
-        actions: [
-          {
-            name: 'test',
-            text: 'Add your own snack item',
-            type: 'input'
-          }
-        ]
-      }
-    )
+    snack_list
   end
 
   def snack_list
-    snacks = Snack.all
-    snacks.map do |snack|
-      votes = snack.votes
-      vote_count_yes = votes.count { |vote| vote.value == 1 }
-      vote_count_no = votes.count { |vote| vote.value == -1 }
-
-      display_name = snack.name.capitalize + ' - ' + vote_count_yes.to_s + ' yes ' + vote_count_no.to_s + ' no'
+    sorted_snacks.map do |snack|
+      name = snack[:name]
+      vote_count_yes = snack[:vote_count_yes]
+      vote_count_no = snack[:vote_count_no]
+      display_name = name.capitalize
       {
         text: display_name,
         fallback: ATTACHMENT_FALLBACK,
@@ -98,29 +86,29 @@ class SlackController < ApplicationController
         vote_count_yes: vote_count_yes,
         actions: [
           {
-            name: snack.name,
-            text: 'Yes',
+            name: name,
+            text: vote_count_yes.to_s,
             type: 'button',
             style: 'primary',
             value: 1
           },
           {
-            name: snack.name,
-            text: 'No',
+            name: name,
+            text: vote_count_no.to_s,
             type: 'button',
             style: 'danger',
             value: -1
           },
           {
-            name: snack.name,
-            text: 'Neutral',
+            name: name,
+            text: 'Undo my vote',
             type: 'button',
             value: 0
           }
         ]
       }
     end
-      .select { |entry| entry[:vote_count_yes] > -2 }
+      .select { |entry| entry[:vote_count_yes] > 0 }
   end
 
   def add_vote_using_payload
@@ -134,7 +122,11 @@ class SlackController < ApplicationController
   def add_vote_using_command
     username = params[:user_name]
     snackname = params[:text]
-    add_vote(username: username, snackname: snackname, value: 1)
+    if add_vote(username: username, snackname: snackname, value: 1)
+      yield(success: true, snackname: snackname)
+    else
+      yield(success: false, snackname: snackname)
+    end
   end
 
   def add_vote(username:, snackname:, value:)
