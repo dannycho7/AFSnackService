@@ -11,7 +11,7 @@ class SlackController < ApplicationController
   ATTACHMENT_FALLBACK = 'You are unable to choose a snack'.freeze
 
   def vote
-    add_vote
+    add_vote_using_payload
 
     render json: {
       text: BANNER_TEXT,
@@ -32,6 +32,24 @@ class SlackController < ApplicationController
             }
           }
         end
+      when 'suggest'
+        respond_to do |format|
+          if add_vote_using_command
+            format.json {
+              render json: {
+                response_type: 'in_channel',
+                text: BANNER_TEXT,
+                "attachments": get_attachment_info
+              }
+            }
+          else
+            format.json {
+              render json: {
+                text: 'This snack cannot be added'
+              }
+            }
+          end
+        end
     end
   end
 
@@ -50,15 +68,26 @@ class SlackController < ApplicationController
     ]
   end
 
-  def add_vote
+  def add_vote_using_payload
     payload = JSON.parse(params[:payload])
     username = payload['user']['name']
-    user = find_or_create_user
-    snack_id = find_or_create_snack.id
+    snackname = payload['actions'].first['value']
+    add_vote(username, snackname)
+  end
+
+  def add_vote_using_command
+    username = params[:user_name]
+    snackname = params[:text]
+    add_vote(username, snackname)
+  end
+
+  def add_vote(username, snackname)
+    user = find_or_create_user(username)
+    snack_id = find_or_create_snack(snackname).id
     Vote.new(user_id: user.id, snack_id: snack_id).save
   end
 
-  def find_or_create_user
+  def find_or_create_user(username)
     user = User.find_by(username: username)
     unless user
       user = User.new(username: username)
@@ -67,19 +96,27 @@ class SlackController < ApplicationController
     user
   end
 
-  def find_or_create_snack
-    snack_name = payload['actions'].first['value']
-    snack = Snack.find_by(name: snack_name)
+  def find_or_create_snack(snackname)
+    snack = Snack.find_by(name: snackname)
     unless snack
-      snack = Snack.new(name: snack_name)
+      snack = Snack.new(name: snackname)
+      snack.save
     end
     snack
   end
 
   def snack_list
     snacks = Snack.all
-    snacks.map { |snack| { name: 'snack', votes: snack.votes.count, text: snack.name.upcase + ' - ' + snack.votes.count.to_s, type: 'button', value: snack.name } }
-          .select { |entry| entry[:votes] > 0 }
+    snacks.map do |snack|
+      {
+        name: 'snack',
+        votes: snack.votes.count,
+        text: snack.name.upcase + ' - ' + snack.votes.count.to_s,
+        type: 'button',
+        value: snack.name
+      }
+    end
+    .select { |entry| entry[:votes] > 0 }
   end
 
   def command
