@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta content='text/html; charset=UTF-8' http-equiv='Content-Type' />
+</head>
+<body>
+<h1>Hi,</h1>
+<p>
+  The following are the snack votes for the past two weeks:<br>
+</p>
+<table style="width:100%">
+  <tr>
+    <th>Snack</th>
+    <th>Votes</th>
+  </tr>
+  <% @snack_votes.each do |snack_vote| %>
+    <tr>
+      <td><%= snack_vote[:name] %></td>
+      <td><%= snack_vote[:votes] %></td>
+    </tr>
+  <% end %>
+</table>
+<p>Thanks you and have a great day!</p>
+</body>
+</html>

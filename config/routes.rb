@@ -5,5 +5,7 @@ Rails.application.routes.draw do
   post 'slack', to: 'slack#receive'
   post 'slack/vote'
 
+  post 'slack_vote/send_results_email'
+
   root 'snack_vote#index'
 end
