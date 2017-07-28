@@ -56,35 +56,75 @@ class SlackController < ApplicationController
   private
 
   def get_attachment_info
-    [
+    snack_list
+  end
+
+  def snack_list
+    snacks = Snack.all
+    snacks.map do |snack|
+      votes = snack.votes
+      vote_count_yes = votes.count { |vote| vote.value == 1 }
+      vote_count_no = votes.count{ |vote| vote.value == -1 }
+
+      display_name = snack.name.capitalize + ' - ' + vote_count_yes.to_s + ' yes ' + vote_count_no.to_s + ' no'
       {
-        "text": ATTACHMENT_TEXT,
-        "fallback": ATTACHMENT_FALLBACK,
-        "callback_id": ATTACHMENT_VOTE_CALLBACK_ID,
-        "color": ATTACHMENT_COLOR,
-        "attachment_type": ATTACHMENT_TYPE,
-        "actions": snack_list
+        text: display_name,
+        fallback: ATTACHMENT_FALLBACK,
+        callback_id: ATTACHMENT_VOTE_CALLBACK_ID,
+        color: ATTACHMENT_COLOR,
+        attachment_type: ATTACHMENT_TYPE,
+        vote_count_yes: vote_count_yes,
+        actions: [
+          {
+            name: snack.name,
+            text: 'Yes',
+            type: 'button',
+            style: 'primary',
+            value: 1
+          },
+          {
+            name: snack.name,
+            text: 'No',
+            type: 'button',
+            style: 'danger',
+            value: -1
+          },
+          {
+            name: snack.name,
+            text: 'Neutral',
+            type: 'button',
+            value: 0
+          }
+        ]
       }
-    ]
+    end
+    .select { |entry| entry[:vote_count_yes] > -2 }
   end
 
   def add_vote_using_payload
     payload = JSON.parse(params[:payload])
+    payload_action = payload['actions'].first
     username = payload['user']['name']
-    snackname = payload['actions'].first['value']
-    add_vote(username, snackname)
+    snackname = payload_action['name']
+    add_vote(username: username, snackname: snackname, value: payload_action['value'])
   end
 
   def add_vote_using_command
     username = params[:user_name]
     snackname = params[:text]
-    add_vote(username, snackname)
+    add_vote(username: username, snackname: snackname, value: 1)
   end
 
-  def add_vote(username, snackname)
+  def add_vote(username:, snackname:, value:)
     user = find_or_create_user(username)
-    snack_id = find_or_create_snack(snackname).id
-    Vote.new(user_id: user.id, snack_id: snack_id).save
+    snack = find_or_create_snack(snackname)
+    vote = Vote.find_by(user_id: user.id, snack_id: snack.id)
+    if vote
+      vote.value = value
+    else
+      vote = Vote.new(user_id: user.id, snack_id: snack.id, value: value)
+    end
+    vote.save
   end
 
   def find_or_create_user(username)
@@ -103,20 +143,6 @@ class SlackController < ApplicationController
       snack.save
     end
     snack
-  end
-
-  def snack_list
-    snacks = Snack.all
-    snacks.map do |snack|
-      {
-        name: 'snack',
-        votes: snack.votes.count,
-        text: snack.name.upcase + ' - ' + snack.votes.count.to_s,
-        type: 'button',
-        value: snack.name
-      }
-    end
-    .select { |entry| entry[:votes] > 0 }
   end
 
   def command
