@@ -7,7 +7,10 @@ class SlackController < ApplicationController
 
   include SnackHelper
 
-  BANNER_TEXT = 'Vote on your favorite snacks'.freeze
+  BANNER_TEXT = '*Vote on your favorite snacks (Resets Bi-Weekly)*'.freeze
+  EMPTY_SNACK_LIST_TEXT = 'There are no snacks in the snack list. Type /suggest [snackname] to add a new snack!'.freeze
+  INFO_TEXT = "*Snack Service Command List:*\n[To view the current snack list] /snacklist. \n[To suggest/add a new snack] /suggest [snackname]".freeze
+
   ATTACHMENT_TYPE = 'default'.freeze
   ATTACHMENT_COLOR = '#3AA3E3'.freeze
   ATTACHMENT_VOTE_CALLBACK_ID = 'vote'.freeze
@@ -25,11 +28,20 @@ class SlackController < ApplicationController
 
   def receive
     case command
+      when 'info'
+        respond_to do |format|
+          format.json {
+            render json: {
+              response_type: 'default',
+              text: INFO_TEXT
+            }
+          }
+        end
       when 'snacklist'
         respond_to do |format|
           format.json {
             render json: {
-              response_type: 'in_channel',
+              response_type: 'default',
               text: BANNER_TEXT,
               "attachments": get_attachment_info
             }
@@ -39,11 +51,11 @@ class SlackController < ApplicationController
         respond_to do |format|
           add_vote_using_command do |status|
             if status[:success]
+              send_updated_list(status[:snackname])
               format.json {
                 render json: {
                   text: "Successfully added snack *#{status[:snackname]}*"
                 }
-                send_updated_list
               }
             else
               format.json {
@@ -59,16 +71,22 @@ class SlackController < ApplicationController
 
   private
 
-  def send_updated_list
+  def send_updated_list(snackname)
     url = URI.parse(ENV['SLACK_WEBHOOK_URL'])
-    res = HTTParty.post(url.to_s, body: {
-      text: BANNER_TEXT,
+    HTTParty.post(url.to_s, body: {
+      text: "The item '#{snackname.capitalize}' was added to the snack list.\nHere are the current voting results:",
       attachments: get_attachment_info
-    }.to_json, headers: { 'Content-Type': 'application/json' })
+    }.to_json, headers: {'Content-Type': 'application/json'})
   end
 
   def get_attachment_info
-    snack_list
+    snack_attachments = snack_list
+    snack_attachments.push(
+      {
+        text: EMPTY_SNACK_LIST_TEXT,
+      }
+    ) if snack_attachments.empty?
+    snack_attachments
   end
 
   def snack_list
