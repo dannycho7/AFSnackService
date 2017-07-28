@@ -2,24 +2,29 @@
 <html>
 <head>
   <meta content='text/html; charset=UTF-8' http-equiv='Content-Type' />
+  <style>
+    td {
+      text-align: center
+    }
+  </style>
 </head>
 <body>
 <h1>Hi,</h1>
 <p>
   The following are the snack votes for the past two weeks:<br>
 </p>
-<table style="width:100%">
+<table style="width:80%">
   <tr>
     <th>Snack</th>
     <th>Yes Votes</th>
     <th>No Votes</th>
   </tr>
   <% @snack_votes.each do |snack_vote| %>
-    <tr>
-      <td><%= snack_vote[:name] %></td>
-      <td><%= snack_vote[:vote_count_yes] %></td>
-      <td><%= snack_vote[:vote_count_no] %></td>
-    </tr>
+      <tr>
+        <td><%= snack_vote[:name] %></td>
+        <td><%= snack_vote[:vote_count_yes] %></td>
+        <td><%= snack_vote[:vote_count_no] %></td>
+      </tr>
   <% end %>
 </table>
 <p>Thanks you and have a great day!</p>
