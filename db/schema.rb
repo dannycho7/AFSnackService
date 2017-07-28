@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170727220628) do
+ActiveRecord::Schema.define(version: 20170728004108) do
 
   create_table "snack_votes", force: :cascade do |t|
     t.integer "snack_id"
@@ -37,6 +37,7 @@ ActiveRecord::Schema.define(version: 20170727220628) do
   create_table "votes", force: :cascade do |t|
     t.integer "snack_id"
     t.integer "user_id"
+    t.integer "value"
     t.index ["snack_id"], name: "index_votes_on_snack_id"
     t.index ["user_id"], name: "index_votes_on_user_id"
   end
