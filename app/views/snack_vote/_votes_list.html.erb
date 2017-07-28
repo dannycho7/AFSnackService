@@ -18,14 +18,16 @@
       </tr>
     </thead>
     <tbody>
-    <% Snack.all.each do |snack| %>
+    <% @sorted_snacks.each do |snack| %>
       <tr>
         <td>
-          <%= snack.name %>
+          <%= snack[:name] %>
         </td>
         <td>
-          <%= snack.votes.count { |vote| vote.value == 1 }
-          %>
+          <%= snack[:vote_count_yes]%>
+        </td>
+        <td>
+          <%= snack[:vote_count_no] %>
         </td>
       </tr>
     <% end %>
