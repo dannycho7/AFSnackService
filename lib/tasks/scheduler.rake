@@ -5,12 +5,13 @@ include SlackHelper
 include SnackHelper
 
 def reset_list(snacks:, top_3:)
-  SnackVoteMailer.snack_vote_email(email: 'dannycho7@gmail.com', snacks: snacks).deliver_now
+  SnackVoteMailer.snack_vote_email(email: ENV['ADMIN_TO_EMAIL'], snacks: snacks).deliver_now
   Vote.all.delete_all
   Snack.where.not(id: top_3).delete_all
 end
 
 task :reset_list => :environment do
+  return unless [14, 28].include? Date.today.day
   snacks = sorted_snacks
   top_3_ids = []
   snacks.each do |snack|
@@ -22,5 +23,5 @@ task :reset_list => :environment do
 end
 
 task :email => :environment do
-  SnackVoteMailer.snack_vote_email(email: 'dannycho7@gmail.com', snacks: sorted_snacks).deliver_now
+  SnackVoteMailer.snack_vote_email(email: ENV['ADMIN_TO_EMAIL'], snacks: sorted_snacks).deliver_now
 end
