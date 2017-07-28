@@ -1,11 +1,10 @@
 class SnackVoteMailer < ApplicationMailer
   include SnackHelper
-  default from: 'example@example.com'
 
-  def snack_vote_email(email)
+  def snack_vote_email(email:, snacks:)
     puts 'inside Mailer'
-    @snack_votes = sorted_snacks.sort_by { |k| k[:votes] }
-    puts sorted
+    @snack_votes = snacks.sort_by { |k| k[:vote_count_yes] }
+    puts sorted_snacks
     mail(to: email, subject: 'Welcome to My Awesome Site')
   end
 end

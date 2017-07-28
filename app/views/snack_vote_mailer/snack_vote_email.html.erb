@@ -11,12 +11,14 @@
 <table style="width:100%">
   <tr>
     <th>Snack</th>
-    <th>Votes</th>
+    <th>Yes Votes</th>
+    <th>No Votes</th>
   </tr>
   <% @snack_votes.each do |snack_vote| %>
     <tr>
       <td><%= snack_vote[:name] %></td>
-      <td><%= snack_vote[:votes] %></td>
+      <td><%= snack_vote[:vote_count_yes] %></td>
+      <td><%= snack_vote[:vote_count_no] %></td>
     </tr>
   <% end %>
 </table>
